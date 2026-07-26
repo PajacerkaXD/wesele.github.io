@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Izabela &amp; Daniel — Zapisz Datę</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0908;
+    --bg-2:#111009;
+    --ink:#e9e2d0;
+    --ink-dim:#a89f8a;
+    --gold:#c9a227;
+    --gold-bright:#e8c65a;
+    --wine:#7a1f2b;
+    --wine-glow:#a8303f;
+    --line:#3a3428;
+    --shadow:#000000;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+
+  html{scroll-behavior:smooth;}
+
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'EB Garamond', serif;
+    overflow-x:hidden;
+    position:relative;
+  }
+
+  /* ---------- background photo layer ---------- */
+  .photo-bg{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+  }
+  .photo-bg .ph{
+    position:absolute;
+    width:26vw;
+    max-width:340px;
+    min-width:160px;
+    aspect-ratio:4/5;
+    background:linear-gradient(160deg,#1c1a14,#0d0c09);
+    border:1px solid #2a2419;
+    filter:grayscale(0.55) brightness(0.5) contrast(1.05);
+    opacity:0.28;
+    border-radius:2px;
+    background-size:cover;
+    background-position:center;
+    box-shadow:0 30px 60px rgba(0,0,0,0.6);
+  }
+  /*
+    ZASTĄP TE PLACEHOLDERY WŁASNYMI ZDJĘCIAMI:
+    dla każdego .ph dodaj w stylu: background-image:url('sciezka/do/zdjecia.jpg');
+    zdjęcia są celowo przyciemnione i odbarwione (filter), żeby czarne tło
+    pozostało dominujące — możesz dostosować wartości filter/opacity.
+  */
+  .ph1{ top:6%;  left:4%;   transform:rotate(-6deg); }
+  .ph2{ top:14%; right:6%;  transform:rotate(5deg);  }
+  .ph3{ bottom:8%; left:10%; transform:rotate(4deg); }
+  .ph4{ bottom:4%; right:3%; transform:rotate(-4deg); }
+  .ph5{ top:42%; left:44%;  transform:rotate(-2deg); opacity:0.16; }
+
+  .vignette{
+    position:fixed; inset:0; z-index:1; pointer-events:none;
+    background:radial-gradient(ellipse at center, rgba(10,9,8,0.35) 0%, rgba(10,9,8,0.88) 62%, rgba(10,9,8,0.99) 100%);
+  }
+
+  .grain{
+    position:fixed; inset:0; z-index:2; pointer-events:none; opacity:0.05; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  section{ position:relative; z-index:3; }
+
+  /* ---------- top eyebrow ---------- */
+  .eyebrow{
+    font-family:'IM Fell English', serif;
+    font-style:italic;
+    letter-spacing:0.12em;
+    color:var(--gold);
+    font-size:0.95rem;
+    text-align:center;
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    min-height:100svh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:6vh 5vw 8vh;
+    gap:2.2rem;
+  }
+
+  .hero-top p{ margin-top:0.6rem; }
+
+  .hero-title{
+    font-family:'Cinzel Decorative', serif;
+    font-weight:700;
+    font-size:clamp(1.8rem, 5vw, 3.4rem);
+    color:var(--ink);
+    text-shadow:0 0 24px rgba(201,162,39,0.15);
+    line-height:1.15;
+  }
+  .hero-title .amp{ color:var(--gold); font-size:0.8em; margin:0 0.15em; }
+
+  .hero-sub{
+    max-width:46ch;
+    margin:0 auto;
+    text-align:center;
+    color:var(--ink-dim);
+    font-size:1.05rem;
+    line-height:1.6;
+  }
+
+  /* ---------- DICE STAGE ---------- */
+  .dice-stage{
+    display:flex;
+    gap:clamp(0.8rem, 3vw, 2.2rem);
+    align-items:center;
+    justify-content:center;
+    flex-wrap:wrap;
+    perspective:900px;
+  }
+
+  .die-slot{ display:flex; flex-direction:column; align-items:center; gap:0.6rem; }
+
+  .die-label{
+    font-family:'IM Fell English', serif;
+    font-style:italic;
+    font-size:0.85rem;
+    color:var(--ink-dim);
+    letter-spacing:0.08em;
+  }
+
+  .d20{
+    width:clamp(72px, 12vw, 108px);
+    height:clamp(72px, 12vw, 108px);
+    position:relative;
+    transform-style:preserve-3d;
+    filter:drop-shadow(0 8px 18px rgba(0,0,0,0.7));
+    transition:filter 0.4s ease;
+  }
+  .d20 svg{ width:100%; height:100%; display:block; }
+  .d20 .face-num{
+    font-family:'Cinzel', serif;
+    font-weight:600;
+  }
+
+  .d20.rolling{ animation:tumble 0.32s linear infinite; }
+  .d20.locked{
+    animation:settle 0.55s cubic-bezier(.2,1.4,.4,1) 1;
+    filter:drop-shadow(0 0 22px rgba(232,198,90,0.55)) drop-shadow(0 8px 18px rgba(0,0,0,0.7));
+  }
+  .d20.locked .die-outline{ stroke:var(--gold-bright); }
+  .d20.locked .die-num{ fill:var(--gold-bright); }
+
+  @keyframes tumble{
+    0%{ transform:rotateX(0deg) rotateY(0deg) scale(0.98); }
+    50%{ transform:rotateX(180deg) rotateY(140deg) scale(1.04); }
+    100%{ transform:rotateX(360deg) rotateY(280deg) scale(0.98); }
+  }
+  @keyframes settle{
+    0%{ transform:scale(1.28) rotate(0deg); }
+    55%{ transform:scale(0.94) rotate(-6deg); }
+    100%{ transform:scale(1) rotate(0deg); }
+  }
+
+  .roll-btn{
+    margin-top:0.6rem;
+    font-family:'Cinzel', serif;
+    letter-spacing:0.14em;
+    font-size:0.85rem;
+    text-transform:uppercase;
+    color:var(--ink);
+    background:linear-gradient(180deg, #1c1710, #0d0b07);
+    border:1px solid var(--gold);
+    padding:0.9rem 2.2rem;
+    cursor:pointer;
+    position:relative;
+    transition:all 0.25s ease;
+  }
+  .roll-btn:hover{ background:linear-gradient(180deg, #2a2214, #12100a); box-shadow:0 0 22px rgba(201,162,39,0.25); }
+  .roll-btn:disabled{ opacity:0.35; cursor:default; box-shadow:none; }
+  .roll-btn:focus-visible{ outline:2px solid var(--gold-bright); outline-offset:3px; }
+
+  /* result reveal */
+  .result{
+    opacity:0;
+    transform:translateY(14px);
+    transition:opacity 0.9s ease, transform 0.9s ease;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:0.5rem;
+  }
+  .result.show{ opacity:1; transform:translateY(0); }
+
+  .result-line{
+    font-family:'IM Fell English', serif;
+    font-style:italic;
+    color:var(--gold);
+    font-size:1rem;
+    letter-spacing:0.05em;
+  }
+  .result-date{
+    font-family:'Cinzel Decorative', serif;
+    font-size:clamp(2rem, 6vw, 3.6rem);
+    color:var(--ink);
+    text-shadow:0 0 30px rgba(232,198,90,0.35);
+  }
+  .result-names{
+    font-family:'Cinzel', serif;
+    font-size:clamp(1.1rem, 2.6vw, 1.5rem);
+    color:var(--ink-dim);
+    letter-spacing:0.06em;
+    margin-top:0.3rem;
+  }
+
+  .scroll-cue{
+    position:absolute;
+    bottom:2.4rem;
+    left:50%;
+    transform:translateX(-50%);
+    opacity:0;
+    transition:opacity 1s ease 0.3s;
+    color:var(--ink-dim);
+    font-size:0.8rem;
+    letter-spacing:0.2em;
+    text-transform:uppercase;
+  }
+  .scroll-cue.show{ opacity:0.7; }
+  .scroll-cue::after{
+    content:"";
+    display:block;
+    width:1px;
+    height:26px;
+    margin:0.5rem auto 0;
+    background:linear-gradient(var(--gold), transparent);
+  }
+
+  /* ---------- divider ---------- */
+  .divider{
+    display:flex; align-items:center; gap:1rem;
+    max-width:340px; margin:0 auto; padding:0 5vw;
+    color:var(--gold);
+  }
+  .divider::before, .divider::after{
+    content:""; flex:1; height:1px;
+    background:linear-gradient(90deg, transparent, var(--line), transparent);
+  }
+
+  /* ---------- STORY / DETAILS ---------- */
+  .panel{
+    max-width:720px;
+    margin:0 auto;
+    padding:9vh 6vw;
+    text-align:center;
+  }
+  .panel h2{
+    font-family:'Cinzel', serif;
+    font-size:clamp(1.3rem, 3vw, 1.9rem);
+    color:var(--gold);
+    letter-spacing:0.08em;
+    margin-bottom:1.1rem;
+    font-weight:600;
+  }
+  .panel p{
+    color:var(--ink-dim);
+    line-height:1.8;
+    font-size:1.08rem;
+  }
+
+  .stat-row{
+    display:flex; justify-content:center; gap:clamp(1.5rem,6vw,4rem);
+    margin-top:2.4rem; flex-wrap:wrap;
+  }
+  .stat{ display:flex; flex-direction:column; gap:0.3rem; }
+  .stat b{ font-family:'Cinzel', serif; color:var(--ink); font-size:1.3rem; }
+  .stat span{ font-family:'IM Fell English', serif; font-style:italic; color:var(--ink-dim); font-size:0.85rem; }
+
+  /* ---------- VENUE / BIESIADA ---------- */
+  .venue{
+    max-width:1000px; margin:0 auto; padding:8vh 6vw 9vh;
+    text-align:center;
+  }
+  .venue h2{
+    font-family:'Cinzel', serif;
+    font-size:clamp(1.3rem, 3vw, 1.9rem);
+    color:var(--gold);
+    letter-spacing:0.08em;
+    font-weight:600;
+    margin-bottom:0.6rem;
+  }
+  .venue .venue-name{
+    font-family:'Cinzel Decorative', serif;
+    font-size:clamp(1.4rem, 3.4vw, 2.1rem);
+    color:var(--ink);
+    margin:0.4rem 0 1rem;
+    text-shadow:0 0 24px rgba(201,162,39,0.15);
+  }
+  .venue p.venue-desc{
+    max-width:56ch;
+    margin:0 auto;
+    color:var(--ink-dim);
+    line-height:1.8;
+    font-size:1.05rem;
+  }
+  .venue-address{
+    font-family:'IM Fell English', serif;
+    font-style:italic;
+    color:var(--ink-dim);
+    font-size:0.95rem;
+    margin-top:0.6rem;
+    letter-spacing:0.03em;
+  }
+  .venue-photos{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+    gap:1.4rem;
+    margin-top:2.6rem;
+  }
+  .venue-photos .frame.frame-wide{
+    grid-column:span 2;
+    aspect-ratio:16/9;
+  }
+  @media (max-width:520px){
+    .venue-photos .frame.frame-wide{ grid-column:span 1; }
+  }
+  /*
+    Aby wstawić własne zdjęcia miejsca biesiady w miejsce ramek:
+    <div class="frame frame-wide" style="background-image:url('sala.jpg'); background-size:cover; background-position:center; border-style:solid;"></div>
+  */
+
+  /* ---------- GALLERY ---------- */
+  .gallery{
+    max-width:1100px; margin:0 auto; padding:8vh 6vw 11vh;
+  }
+  .gallery-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(190px, 1fr));
+    gap:1.4rem;
+    margin-top:2.4rem;
+  }
+  .frame{
+    aspect-ratio:4/5;
+    border:1px dashed var(--line);
+    background:linear-gradient(160deg,#141209,#0c0b07);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:0.6rem;
+    color:var(--ink-dim);
+    font-size:0.85rem;
+    position:relative;
+    transition:border-color 0.3s ease;
+  }
+  .frame:hover{ border-color:var(--gold); }
+  .frame .rune{ font-size:1.6rem; color:var(--line); }
+  /*
+    Aby wstawić własne zdjęcie w miejsce ramki:
+    <div class="frame" style="background-image:url('zdjecie.jpg'); background-size:cover; background-position:center; border-style:solid;"></div>
+  */
+
+  footer{
+    text-align:center;
+    padding:5vh 5vw 6vh;
+    color:var(--ink-dim);
+    font-family:'IM Fell English', serif;
+    font-style:italic;
+    font-size:0.9rem;
+    border-top:1px solid var(--line);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .d20.rolling{ animation:none; }
+    .d20.locked{ animation:none; }
+    html{ scroll-behavior:auto; }
+    .result{ transition:none; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="photo-bg">
+    <div class="ph ph1"></div>
+    <div class="ph ph2"></div>
+    <div class="ph ph3"></div>
+    <div class="ph ph4"></div>
+    <div class="ph ph5"></div>
+  </div>
+  <div class="vignette"></div>
+  <div class="grain"></div>
+
+  <section class="hero">
+    <div class="hero-top">
+      <p class="eyebrow">rzut kośćmi rozstrzygnie naszą przyszłość...</p>
+      <h1 class="hero-title">Izabela<span class="amp">&amp;</span>Daniel</h1>
+      <p class="hero-sub">Los został rzucony — a właściwie zaraz zostanie. Kliknij, aby rzucić kośćmi i odkryć datę, w którą powiemy sobie „tak”.</p>
+    </div>
+
+    <div class="dice-stage" id="diceStage">
+      <div class="die-slot">
+        <span class="die-label">dzień</span>
+        <div class="d20" data-final="12" id="die1">
+          <svg viewBox="0 0 100 100">
+            <polygon class="die-outline" points="50,4 90,27 90,73 50,96 10,73 10,27" fill="none" stroke="#c9a227" stroke-width="2"/>
+            <polygon points="50,4 90,27 50,50" fill="none" stroke="#5a4f30" stroke-width="1"/>
+            <polygon points="90,27 90,73 50,50" fill="none" stroke="#5a4f30" stroke-width="1"/>
+            <polygon points="90,73 50,96 50,50" fill="none" stroke="#5a4f30" stroke-width="1"/>
+            <polygon points="50,96 10,73 50,50" fill="none" stroke="#5a4f30" stroke-width="1"/>
+            <polygon points="10,73 10,27 50,50" fill="none" stroke="#5a4f30" stroke-width="1"/>
+            <polygon points="10,27 50,4 50,50" fill="none" stroke="#5a4f30" stroke-width="1"/>
+            <text x="50" y="58" text-anchor="middle" class="die-num face-num" font-size="30" fill="#e9e2d0">?</text>
+          </svg>
+        </div>
+      </div>
+      <div class="die-slot">
+        <span class="die-label">miesiąc</span>
+        <div class="d20" data-final="08" id="die2">
+          <svg viewBox="0 0 100 100">
+            <polygon class="die-outline" points="50,4 90,27 90,73 50,96 10,73 10,27" fill="none" stroke="#c9a227" stroke-width="2"/>
+            <polygon points="50,4 90,27 50,50" fill="none" stroke="#5a4f30" stroke-width="1"/>
+            <polygon points="90,27 90,73 50,50" fill="none" stroke="#5a4f30" stroke-width="1"/>
+            <polygon points="90,73 50,96 50,50" fill="none" stroke="#5a4f30" stroke-width="1"/>
+            <polygon points="50,96 10,73 50,50" fill="none" stroke="#5a4f30" stroke-width="1"/>
+            <polygon points="10,73 10,27 50,50" fill="none" stroke="#5a4f30" stroke-width="1"/>
+            <polygon points="10,27 50,4 50,50" fill="none" stroke="#5a4f30" stroke-width="1"/>
+            <text x="50" y="58" text-anchor="middle" class="die-num face-num" font-size="30" fill="#e9e2d0">?</text>
+          </svg>
+        </div>
+      </div>
+      <div class="die-slot">
+        <span class="die-label">rok</span>
+        <div class="d20" data-final="2028" id="die3">
+          <svg viewBox="0 0 100 100">
+            <polygon class="die-outline" points="50,4 90,27 90,73 50,96 10,73 10,27" fill="none" stroke="#c9a227" stroke-width="2"/>
+            <polygon points="50,4 90,27 50,50" fill="none" stroke="#5a4f30" stroke-width="1"/>
+            <polygon points="90,27 90,73 50,50" fill="none" stroke="#5a4f30" stroke-width="1"/>
+            <polygon points="90,73 50,96 50,50" fill="none" stroke="#5a4f30" stroke-width="1"/>
+            <polygon points="50,96 10,73 50,50" fill="none" stroke="#5a4f30" stroke-width="1"/>
+            <polygon points="10,73 10,27 50,50" fill="none" stroke="#5a4f30" stroke-width="1"/>
+            <polygon points="10,27 50,4 50,50" fill="none" stroke="#5a4f30" stroke-width="1"/>
+            <text x="50" y="58" text-anchor="middle" class="die-num face-num" font-size="22" fill="#e9e2d0">?</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <button class="roll-btn" id="rollBtn" onclick="rollDice()">Rzuć kośćmi</button>
+
+    <div class="result" id="result">
+      <p class="result-line">los został rzucony —</p>
+      <p class="result-date">12 · 08 · 2028</p>
+      <p class="result-names">Izabela &amp; Daniel biorą ślub</p>
+    </div>
+
+    <div class="scroll-cue" id="scrollCue">przewiń w dół</div>
+  </section>
+
+  <div class="divider"><span>❧</span></div>
+
+  <section class="panel">
+    <h2>Nasza Kampania</h2>
+    <p>Po latach wspólnych przygód, questów i niejednego krytycznego sukcesu, postanowiliśmy związać się na dobre. Ta strona to nasz zwój ogłoszeń — szczegóły ceremonii i uczty pojawią się tu wkrótce.</p>
+    <div class="stat-row">
+      <div class="stat"><b>12.08.2028</b><span>data</span></div>
+      <div class="stat"><b>Restauracja Maxim</b><span>miejsce</span></div>
+      <div class="stat"><b>wkrótce</b><span>godzina</span></div>
+    </div>
+  </section>
+
+  <div class="divider"><span>❧</span></div>
+
+  <section class="venue">
+    <p class="eyebrow">Aby przejść dalej musisz zebrać drużynę</p>
+    <h2>Tu rozegra się finałowa biesiada</h2>
+    <p class="venue-name">Restauracja Maxim</p>
+    <p class="venue-desc">Po ceremonii zapraszamy do wspólnego świętowania przy suto zastawionych stołach. Restauracja Maxim będzie gospodarzem naszej weselnej uczty.</p>
+    <div class="venue-photos">
+      <div class="frame frame-wide" style="background-image:url('img/IMG_1438.jpeg'); background-size:cover; background-position:center; border-style:solid;"></div>
+      <div class="frame" style="background-image:url('img/IMG_1439.jpeg'); background-size:cover; background-position:center; border-style:solid;"></div>
+      <div class="frame" style="background-image:url('img/IMG_1430.jpeg'); background-size:cover; background-position:center; border-style:solid;"></div>
+      <div class="frame" style="background-image:url('img/IMG_1428.jpeg'); background-size:cover; background-position:center; border-style:solid;"></div>
+      <div class="frame" style="background-image:url('img/IMG_1427.jpeg'); background-size:cover; background-position:center; border-style:solid;"></div>
+      <div class="frame" style="background-image:url('img/IMG_1437.jpeg'); background-size:cover; background-position:center; border-style:solid;"></div>
+      <div class="frame" style="background-image:url('img/restauracja_fasada.jpg'); background-size:cover; background-position:center; border-style:solid;"></div>
+    </div>
+  </section>
+
+  <div class="divider"><span>❧</span></div>
+
+  <section class="gallery">
+    <p class="eyebrow">stronice zapisane wspólnymi krokami</p>
+    <h2 style="text-align:center;font-family:'Cinzel',serif;color:var(--gold);letter-spacing:0.08em;font-weight:600;">Kroniki Przygody</h2>
+    <p style="max-width:60ch;margin:1rem auto 0;text-align:center;color:var(--ink-dim);line-height:1.8;font-size:1.05rem;">Każda wspólna wyprawa, każdy szczyt zdobyty i każdy zachód słońca nad morzem to kolejna karta naszej historii. Oto garść wspomnień, które doprowadziły nas do tego jednego, najważniejszego rozdziału.</p>
+    <div class="gallery-grid">
+      <div class="frame" style="background-image:url('img/couple/IMG_1096.jpeg'); background-size:cover; background-position:center; border-style:solid;"></div>
+      <div class="frame" style="background-image:url('img/couple/IMG_2184.jpeg'); background-size:cover; background-position:center; border-style:solid;"></div>
+      <div class="frame" style="background-image:url('img/couple/IMG_1602.jpeg'); background-size:cover; background-position:center; border-style:solid;"></div>
+      <div class="frame" style="background-image:url('img/couple/IMG_1198.jpeg'); background-size:cover; background-position:center; border-style:solid;"></div>
+      <div class="frame" style="background-image:url('img/couple/IMG_4785.jpeg'); background-size:cover; background-position:center; border-style:solid;"></div>
+      <div class="frame" style="background-image:url('img/couple/IMG_0357.jpeg'); background-size:cover; background-position:center; border-style:solid;"></div>
+      <div class="frame" style="background-image:url('img/couple/IMG_9685.jpeg'); background-size:cover; background-position:center; border-style:solid;"></div>
+      <div class="frame" style="background-image:url('img/couple/IMG_9349.jpeg'); background-size:cover; background-position:center; border-style:solid;"></div>
+      <div class="frame" style="background-image:url('img/couple/IMG_4993.jpeg'); background-size:cover; background-position:center; border-style:solid;"></div>
+      <div class="frame" style="background-image:url('img/couple/IMG_9249.jpeg'); background-size:cover; background-position:center; border-style:solid;"></div>
+      <div class="frame" style="background-image:url('img/couple/IMG_6799.jpeg'); background-size:cover; background-position:center; border-style:solid;"></div>
+      <div class="frame" style="background-image:url('img/couple/IMG_1740.jpeg'); background-size:cover; background-position:center; border-style:solid;"></div>
+    </div>
+  </section>
+
+  <footer>
+    do zobaczenia przy stole biesiadnym — Izabela &amp; Daniel
+  </footer>
+
+<script>
+  let rolled = false;
+
+  function rollDice(){
+    if(rolled) return;
+    rolled = true;
+    const btn = document.getElementById('rollBtn');
+    btn.disabled = true;
+
+    const dice = [
+      { el: document.getElementById('die1'), final: '12', delay: 900,  digits: 2 },
+      { el: document.getElementById('die2'), final: '08', delay: 1500, digits: 2 },
+      { el: document.getElementById('die3'), final: '2028', delay: 2300, digits: [4,20] }
+    ];
+
+    dice.forEach(d => {
+      d.el.classList.add('rolling');
+      const numEl = d.el.querySelector('.die-num');
+      const spinTicker = setInterval(() => {
+        const isYear = d.final.length === 4;
+        numEl.textContent = isYear
+          ? String(Math.floor(1900 + Math.random()*250))
+          : String(Math.floor(Math.random()*20)+1).padStart(2,'0');
+      }, 70);
+
+      setTimeout(() => {
+        clearInterval(spinTicker);
+        d.el.classList.remove('rolling');
+        numEl.textContent = d.final;
+        d.el.classList.add('locked');
+      }, d.delay);
+    });
+
+    setTimeout(() => {
+      document.getElementById('result').classList.add('show');
+      document.getElementById('scrollCue').classList.add('show');
+    }, 2300 + 700);
+  }
+</script>
+
+</body>
+</html>
