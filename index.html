@@ -584,6 +584,7 @@
 <script>
   const CONFIG = {
     date: { d:12, m:8, y:2028 },
+    mapUrl: 'https://maps.app.goo.gl/LL861WTBKt7q7Erf9',  // dokładny link z Google Maps (ma pierwszeństwo przed mapQuery)
     mapQuery: 'Restauracja Maxim',  // najlepiej pełny adres, jeśli są inne lokale o tej nazwie
     email: '',                       // np. 'kontakt@domena.pl' — pokaże sekcję „Potwierdź obecność"
     phone: ''                        // np. '+48 600 000 000'
@@ -697,7 +698,7 @@
   }
 
   /* ---------- mapa i RSVP ---------- */
-  $('mapLink').href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(CONFIG.mapQuery);
+  $('mapLink').href = CONFIG.mapUrl || ('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(CONFIG.mapQuery));
   if(CONFIG.email || CONFIG.phone){
     $('rsvp').hidden = false;
     const l = $('rsvpLinks');
