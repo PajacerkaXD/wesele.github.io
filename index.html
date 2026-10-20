@@ -376,12 +376,17 @@
   */
 
   footer{
+    position:relative;
+    z-index:3;               /* nad winietą i ziarnem, które wcześniej przyciemniały napis */
     text-align:center;
-    padding:5vh 5vw 6vh;
-    color:var(--ink-dim);
+    padding:6vh 5vw 8vh;
+    color:var(--gold-bright);
     font-family:'IM Fell English', serif;
     font-style:italic;
-    font-size:0.9rem;
+    font-size:clamp(1.15rem, 3.6vw, 1.6rem);
+    letter-spacing:0.06em;
+    line-height:1.5;
+    text-shadow:0 0 18px rgba(232,198,90,0.45);
     border-top:1px solid var(--line);
   }
 
@@ -725,8 +730,23 @@
 
   /* ---------- muzyka ---------- */
   const bgMusic = $('bgMusic'), musicToggle = $('musicToggle');
-  bgMusic.volume = 0.45;
+  const MUSIC_VOLUME = 0.15;   // docelowa głośność (0–1) — zmień, jeśli nadal za głośno/cicho
+  const FADE_MS = 3000;        // czas płynnego wejścia muzyki
+  bgMusic.volume = 0;
   let userPaused = false;
+  let fadeTimer;
+
+  function fadeIn(){
+    clearInterval(fadeTimer);
+    bgMusic.volume = 0;
+    const steps = 30, stepMs = FADE_MS / steps;
+    let i = 0;
+    fadeTimer = setInterval(() => {
+      i++;
+      bgMusic.volume = Math.min(MUSIC_VOLUME, MUSIC_VOLUME * (i / steps));
+      if(i >= steps) clearInterval(fadeTimer);
+    }, stepMs);
+  }
 
   function setPlayingUI(p){
     musicToggle.classList.toggle('playing', p);
@@ -737,7 +757,8 @@
 
   function startMusic(){
     if(userPaused || !bgMusic.paused) return;
-    bgMusic.play().catch(() => {});
+    bgMusic.volume = 0;
+    bgMusic.play().then(fadeIn).catch(() => {});
   }
 
   // jeśli autoplay zablokowany — start po pierwszej interakcji; wszystkie nasłuchiwacze usuwane naraz
